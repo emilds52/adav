@@ -5,9 +5,9 @@ USE IEEE.std_logic_unsigned.all;
 
 ENTITY interfaz_entrada IS 
   PORT (
-     reset, clk      : in std_logic;
-     validación    : in std_logic;
-     data_in         : in std_logic_vector(23 downto 0); 
+     reset, clk    : in std_logic;
+     validacion    : in std_logic;
+     data_in       : in std_logic_vector(23 downto 0); 
      entradas      : out std_logic_vector(23 downto 0) ); 
 END interfaz_entrada;
 

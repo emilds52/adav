@@ -17,7 +17,7 @@ ARCHITECTURE behavior OF datapath IS
      signal tmp1,  tmp2,  tmp3,  tmp4,  tmp5  : std_logic_vector(23 downto 0);
      signal tmp6,  tmp7,  tmp8,  tmp9,  tmp10 : std_logic_vector(23 downto 0);
      signal tmp11, tmp12, tmp13, tmp14, tmp15 : std_logic_vector(23 downto 0);
-     signal tmp16, tmp17, tmp18               : std_logic_vector(23 downto 0);
+     signal tmp16, tmp17, tmp18, tmp0         : std_logic_vector(23 downto 0);
 
      signal m_tmp1,  m_tmp2,  m_tmp3,  m_tmp4,  m_tmp5  : std_logic_vector(47 downto 0);
      signal m_tmp10, m_tmp11, m_tmp12, m_tmp13, m_tmp14 : std_logic_vector(47 downto 0);
@@ -90,25 +90,25 @@ BEGIN
        tmp9 <= tmp1 + sv1;
      
        m_tmp10 <= tmp9 * inv_a1;
-       tmp10   <= m_tmp10(39 downto 16)
+       tmp10   <= m_tmp10(39 downto 16);
        m_tmp11 <= tmp10 * neg_a2;
-       tmp11   <= m_tmp11(39 downto 16)
+       tmp11   <= m_tmp11(39 downto 16);
        m_tmp12 <= tmp10 * neg_a3;
-       tmp12   <= m_tmp12(39 downto 16)
+       tmp12   <= m_tmp12(39 downto 16);
        m_tmp13 <= tmp10 * neg_a4;
-       tmp13   <= m_tmp13(39 downto 16)
+       tmp13   <= m_tmp13(39 downto 16);
        m_tmp14 <= tmp10 * neg_a5;
-       tmp14   <= m_tmp14(39 downto 16)
+       tmp14   <= m_tmp14(39 downto 16);
      
        tmp15 <= tmp8 + tmp11;
        tmp16 <= tmp7 + tmp12;
        tmp17 <= tmp6 + tmp13;
        tmp18 <= tmp5 + tmp14;
      
-       sv4_comb = tmp18;
-       sv3_comb = tmp17;
-       sv2_comb = tmp16;
-       sv1_comb = tmp15;
+       sv4_comb <= tmp18;
+       sv3_comb <= tmp17;
+       sv2_comb <= tmp16;
+       sv1_comb <= tmp15;
 
        salidas <= tmp10;
 END behavior;

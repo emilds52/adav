@@ -14,7 +14,7 @@ END interfaz_salida;
 
 ARCHITECTURE behavior OF interfaz_salida IS
 BEGIN  
-      Proc_Entrega : PROCESS (reset, clk)
+      Proc_Entrega : PROCESS (reset, clk) BEGIN
            IF reset='0' THEN
                 data_out <= (others => '0');    valid_out <= '0';
            ELSIF (clk'event AND clk='1') THEN
