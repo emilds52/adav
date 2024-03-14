@@ -17,6 +17,7 @@ ARCHITECTURE behavior OF control IS
   CONSTANT ck2 : integer := 2;    CONSTANT ck3 : integer := 3;
   CONSTANT ck4 : integer := 4;    CONSTANT ck5 : integer := 5;
   CONSTANT ck6 : integer := 6;    CONSTANT ck7 : integer := 7;
+  CONSTANT ck8 : integer := 8;    CONSTANT ck9 : integer := 9;
   signal estado : integer;
 BEGIN  
   Proc_Estado : PROCESS (reset, clk)
