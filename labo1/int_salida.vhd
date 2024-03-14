@@ -23,7 +23,8 @@ Proc_Entrega : PROCESS (reset, clk) BEGIN
     IF fin = '1' THEN  
       data_out  <= salidas;
       valid_out_reg <= '1';
-    ELSIF 
+    ELSIF ACK = '1' AND valid_out_reg = '1' THEN
+      valid_out_reg = '0'
     END IF;
   END IF; 
 END PROCESS;
