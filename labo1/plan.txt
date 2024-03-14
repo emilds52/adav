@@ -45,3 +45,42 @@ tmp13 <= * tmp10; tmp16 <= tmp7 + tmp12;
 tmp14 <= * tmp10; tmp17 <= tmp6 + tmp13;
 tmp5  <= * tmp0;
                   tmp18 <= tmp5 + tmp14;
+
+Version 4:
+tmp1  <= * tmp0;
+tmp2  <= * tmp0;  tmp9  <= + tmp1;
+tmp3  <= * tmp0;  tmp8  <= + tmp2;
+tmp4  <= * tmp0;  tmp7  <= + tmp3;
+tmp10 <= * tmp9;  tmp6  <= + tmp4;
+tmp11 <= * tmp10;
+tmp12 <= * tmp10; sv1 <= tmp8 + tmp11;
+tmp13 <= * tmp10; sv2 <= tmp7 + tmp12;
+tmp14 <= * tmp10; sv3 <= tmp6 + tmp13;
+tmp5  <= * tmp0;
+                  sv4 <= tmp5 + tmp14;
+
+Version 5: Reutilizando registros
+tmp1  <= * tmp0;
+tmp1  <= * tmp0; tmp9  <= + tmp1;
+tmp1  <= * tmp0; tmp8  <= + tmp1;
+tmp1  <= * tmp0; tmp7  <= + tmp1;
+tmp9  <= * tmp9; tmp6  <= + tmp1;
+tmp1  <= * tmp9;
+tmp1  <= * tmp9; sv1 <= tmp8 + tmp1;
+tmp1  <= * tmp9; sv2 <= tmp7 + tmp1;
+tmp1  <= * tmp9; sv3 <= tmp6 + tmp1;
+tmp8  <= * tmp0;
+                 sv4 <= tmp8 + tmp1;
+
+Version 6: Renombrando registros
+tmp1  <= * tmp0;
+tmp1  <= * tmp0; tmp2  <= + tmp1;
+tmp1  <= * tmp0; tmp3  <= + tmp1;
+tmp1  <= * tmp0; tmp4  <= + tmp1;
+tmp2  <= * tmp2; tmp5  <= + tmp1;
+tmp1  <= * tmp2;
+tmp1  <= * tmp2; sv1 <= tmp3 + tmp1;
+tmp1  <= * tmp2; sv2 <= tmp4 + tmp1;
+tmp1  <= * tmp2; sv3 <= tmp5 + tmp1;
+tmp3  <= * tmp0;
+                 sv4 <= tmp3 + tmp1;

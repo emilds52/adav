@@ -15,17 +15,17 @@ END datapath;
 
 ARCHITECTURE behavior OF datapath IS
 
-  signal tmp1,  tmp2,  tmp3,  tmp4,  tmp5  : std_logic_vector(23 downto 0);
-  signal tmp6,  tmp7,  tmp8,  tmp9,  tmp10 : std_logic_vector(23 downto 0);
-  signal tmp11, tmp12, tmp13, tmp14, tmp15 : std_logic_vector(23 downto 0);
-  signal tmp16, tmp17, tmp18, tmp0         : std_logic_vector(23 downto 0);
+  -- Señales y registros
+  signal reg1,      reg2,       reg3,       reg4,       reg5       : std_logic_vector(23 downto 0);
+  signal reg1_comb, reg2_comb,  reg3_comb,  reg4_comb,  reg5_comb  : std_logic_vector(23 downto 0);
 
-  signal m_tmp1,  m_tmp2,  m_tmp3,  m_tmp4,  m_tmp5  : std_logic_vector(47 downto 0);
-  signal m_tmp10, m_tmp11, m_tmp12, m_tmp13, m_tmp14 : std_logic_vector(47 downto 0);
+  signal mulA, mulB, mulQ, sumA, sumB, sumQ : std_logic_vector(23 downto 0);
+  signal m_mulQ                             : std_logic_vector(47 downto 0);
 
   signal sv1,      sv2,      sv3,      sv4      : std_logic_vector(23 downto 0);
   signal sv1_comb, sv2_comb, sv3_comb, sv4_comb : std_logic_vector(23 downto 0);
 
+  -- Constantes
   constant b1 : std_logic_vector(23 downto 0) := "00000000" & "00000100" & "11000000";
   constant b2 : std_logic_vector(23 downto 0) := "00000000" & "00010011" & "00000010";
   constant b3 : std_logic_vector(23 downto 0) := "00000000" & "00011100" & "10000011";
@@ -42,55 +42,121 @@ BEGIN
 
 Proc_seq : PROCESS (reset, clk) BEGIN
   IF reset='0' THEN
-    sv1 <= (others => '0');    sv2 <= (others => '0');
-    sv3 <= (others => '0');    sv4 <= (others => '0');
+    sv1  <= (others => '0');
+    sv2  <= (others => '0');
+    sv3  <= (others => '0');
+    sv4  <= (others => '0');
+    reg1 <= (others => '0');
+    reg2 <= (others => '0');
+    reg3 <= (others => '0');
+    reg4 <= (others => '0');
+    reg5 <= (others => '0');
   ELSIF (clk'event AND clk='1') THEN
-    IF comandos(0)='1' THEN
-      sv1 <= sv1_comb;   sv2 <= sv2_comb;
-      sv3 <= sv3_comb;   sv4 <= sv4_comb;
-    END IF; 
+    sv1  <= sv1_comb;
+    sv2  <= sv2_comb;
+    sv3  <= sv3_comb;
+    sv4  <= sv4_comb; 
+    reg1 <= reg1_comb;
+    reg2 <= reg2_comb;
+    reg3 <= reg3_comb;
+    reg4 <= reg4_comb;
+    reg5 <= reg5_comb;
   END IF; 
 END PROCESS;
 
+-- Multiplexores
+PROCESS(all) IS BEGIN
+  -- Retener valor de registros por defecto:
+  sv1_comb  <= sv1;
+  sv2_comb  <= sv2;
+  sv3_comb  <= sv3;
+  sv4_comb  <= sv4;
+  reg1_comb <= reg1;
+  reg2_comb <= reg2;
+  reg3_comb <= reg3;
+  reg4_comb <= reg4;
+  reg5_comb <= reg5;
+  -- Entrada 0 por defecto
+  mulA <= (others => '0');
+  mulB <= (others => '0');
+  sumA <= (others => '0');
+  sumB <= (others => '0');
+  CASE comandos(3 downto 0) IS
+    WHEN "0000" =>
+      mulA      <= entradas;
+      mulB      <= b1;
+      reg1_comb <= mulQ;
+    WHEN "0001" =>
+      mulA      <= entradas;
+      mulB      <= b2;
+      reg1_comb <= mulQ;
+      sumA      <= reg1;
+      sumB      <= sv1;
+      reg2_comb <= sumQ;
+    WHEN "0011" =>
+      mulA      <= entradas;
+      mulB      <= b3;
+      reg1_comb <= mulQ;
+      sumA      <= reg1;
+      sumB      <= sv2;
+      reg3_comb <= sumQ; 
+    WHEN "0100" =>
+      mulA      <= entradas;
+      mulB      <= b4;
+      reg1_comb <= mulQ;
+      sumA      <= reg1;
+      sumB      <= sv3;
+      reg4_comb <= sumQ;
+    WHEN "0101" =>
+      mulA      <= reg2;
+      mulB      <= inv_a1;
+      reg2_comb <= mulQ;
+      sumA      <= reg1;
+      sumB      <= sv4;
+      reg5_comb <= sumQ;
+    WHEN "0110" =>
+      mulA      <= reg2;
+      mulB      <= neg_a2;
+      reg1_comb <= mulQ;
+    WHEN "0111" =>
+      mulA      <= reg2;
+      mulB      <= neg_a3;
+      reg1_comb <= mulQ;
+      sumA      <= reg3;
+      sumB      <= reg1;
+      sv1_comb  <= sumQ;
+    WHEN "1000" =>
+      mulA      <= reg2;
+      mulB      <= neg_a4;
+      reg1_comb <= mulQ;
+      sumA      <= reg4;
+      sumB      <= reg1;
+      sv2_comb  <= sumQ;
+    WHEN "1001" =>
+      mulA      <= reg2;
+      mulB      <= neg_a5;
+      reg1_comb <= mulQ;
+      sumA      <= reg5;
+      sumB      <= reg1;
+      sv3_comb  <= sumQ;
+    WHEN "1010" =>
+      mulA      <= entradas;
+      mulB      <= b5;
+      reg3_comb <= mulQ;
+    WHEN "1011" =>
+      sumA      <= reg3;
+      sumB      <= reg1;
+      sv4_comb  <= sumQ;
+    WHEN others =>
+  END CASE;
+END PROCESS;
+
+m_mulQ <= mulA * mulB;
+mulQ   <= m_mulQ(39 downto 16);
+sumQ   <= sumA + sumB;
+
 flags <= (others => '0');
 
-tmp0   <= entradas;
-m_tmp1 <= tmp0 * b1;
-tmp1   <= m_tmp1(39 downto 16);
-m_tmp2 <= tmp0 * b2;
-tmp2   <= m_tmp2(39 downto 16);
-m_tmp3 <= tmp0 * b3;
-tmp3   <= m_tmp3(39 downto 16);
-m_tmp4 <= tmp0 * b4;
-tmp4   <= m_tmp4(39 downto 16);
-m_tmp5 <= tmp0 * b5;
-tmp5   <= m_tmp5(39 downto 16);
+salidas <= reg2; -- A partir del ciclo 5. Registrarlo?
 
-tmp6 <= tmp4 + sv4;
-tmp7 <= tmp3 + sv3;
-tmp8 <= tmp2 + sv2;
-tmp9 <= tmp1 + sv1;
-
-m_tmp10 <= tmp9 * inv_a1;
-tmp10   <= m_tmp10(39 downto 16);
-m_tmp11 <= tmp10 * neg_a2;
-tmp11   <= m_tmp11(39 downto 16);
-m_tmp12 <= tmp10 * neg_a3;
-tmp12   <= m_tmp12(39 downto 16);
-m_tmp13 <= tmp10 * neg_a4;
-tmp13   <= m_tmp13(39 downto 16);
-m_tmp14 <= tmp10 * neg_a5;
-tmp14   <= m_tmp14(39 downto 16);
-
-tmp15 <= tmp8 + tmp11;
-tmp16 <= tmp7 + tmp12;
-tmp17 <= tmp6 + tmp13;
-tmp18 <= tmp5 + tmp14;
-
-sv4_comb <= tmp18;
-sv3_comb <= tmp17;
-sv2_comb <= tmp16;
-sv1_comb <= tmp15;
-
-salidas <= tmp10;
 END behavior;
