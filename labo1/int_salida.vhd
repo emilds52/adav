@@ -24,7 +24,7 @@ Proc_Entrega : PROCESS (reset, clk) BEGIN
       data_out  <= salidas;
       valid_out_reg <= '1';
     ELSIF ACK = '1' AND valid_out_reg = '1' THEN
-      valid_out_reg = '0'
+      valid_out_reg <= '0';
     END IF;
   END IF; 
 END PROCESS;

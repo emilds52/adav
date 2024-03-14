@@ -26,7 +26,7 @@ BEGIN
     IF reset='0' THEN
       estado <= 0;
     ELSIF (clk'event AND clk='1') THEN
-      IF (estado = ck0 AND validacion = '0' OR estado = ck11) THEN 
+      IF ((estado = ck0 AND validacion = '0') OR (estado = ck11)) THEN 
         estado <= ck0; 
       ELSE 
         estado <= estado + 1;
@@ -34,7 +34,7 @@ BEGIN
     END IF;
   END PROCESS;
 
-  Proc_Comandos : PROCESS (reset, clk)
+  Proc_Comandos : PROCESS (all)
   BEGIN
     IF reset='0' THEN     comandos <= "00000000";   fin <= '0';      
     ELSE   

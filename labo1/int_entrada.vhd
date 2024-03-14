@@ -24,13 +24,13 @@ BEGIN
   BEGIN
     IF reset='0' THEN
       entradas <= (others => '0');
-      ACK_reg  <= '0'
-      busy_reg <= '0'
+      ACK_reg  <= '0';
+      busy_reg <= '0';
     ELSIF (clk'event AND clk='1') THEN
       -- Dejar de estar ocupado cuando nos llegue la ACK de salida.
-      IF ACK_salida THEN
-        busy_reg <= '0'
-      END IF
+      IF ACK_salida = '1' THEN
+        busy_reg <= '0';
+      END IF;
       -- Coger próximo dato si no estamos ocupados. 
       -- Solo se coge en el flanco de subida y solo se baja el ACK en el flanco de bajada.
       IF (validacion = '1' AND ACK_reg = '0' AND busy_reg = '0') THEN  
