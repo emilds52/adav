@@ -17,9 +17,9 @@ architecture structural of rca is
 
   component full_adder is
   port(
-    A   : in std_logic;
-    B   : in std_logic;
-    Cin : in std_logic;
+    A   : in  std_logic;
+    B   : in  std_logic;
+    Cin : in  std_logic;
     Sum : out std_logic;
     Cout: out std_logic
   );
