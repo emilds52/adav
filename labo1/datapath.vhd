@@ -15,9 +15,21 @@ END datapath;
 
 ARCHITECTURE behavior OF datapath IS
 
+  -- Entidades
+  sumador : RCA
+  generic map (
+    DATA_WIDTH => 24
+  )
+  port map (
+    A  => sumA,
+    B  => sumB,
+    Q  => sumQ,
+    Co => open
+  );
+
   -- Señales y registros
-  signal reg1,      reg2,       reg3,       reg4,       reg5       : std_logic_vector(23 downto 0);
-  signal reg1_comb, reg2_comb,  reg3_comb,  reg4_comb,  reg5_comb  : std_logic_vector(23 downto 0);
+  signal reg1,      reg2,      reg3,      reg4,      reg5      : std_logic_vector(23 downto 0);
+  signal reg1_comb, reg2_comb, reg3_comb, reg4_comb, reg5_comb : std_logic_vector(23 downto 0);
 
   signal mulA, mulB, mulQ, sumA, sumB, sumQ : std_logic_vector(23 downto 0);
   signal m_mulQ                             : std_logic_vector(47 downto 0);
@@ -153,7 +165,6 @@ END PROCESS;
 
 m_mulQ <= mulA * mulB;
 mulQ   <= m_mulQ(39 downto 16);
-sumQ   <= sumA + sumB;
 
 flags <= (others => '0');
 
