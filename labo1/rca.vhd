@@ -11,9 +11,9 @@ port (
   Q  : out std_logic_vector(DATA_WIDTH-1 downto 0);
   Co : out std_logic
 );
-end sumador;
+end RCA;
 
-architecture structural of sumador is 
+architecture structural of rca is 
 
   component full_adder is
   port(
@@ -25,7 +25,7 @@ architecture structural of sumador is
   );
   end component;
   
-  signal Carry_aux : std_logic_vector(9 downto 0);
+  signal Carry_aux : std_logic_vector(DATA_WIDTH downto 0);
 
 begin
   Carry_aux(0) <= '0';

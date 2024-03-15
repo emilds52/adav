@@ -16,17 +16,17 @@ END datapath;
 ARCHITECTURE behavior OF datapath IS
 
   -- Entidades
-  sumador : RCA
-  generic map (
-    DATA_WIDTH => 24
-  )
-  port map (
-    A  => sumA,
-    B  => sumB,
-    Q  => sumQ,
-    Co => open
+  COMPONENT RCA IS
+  GENERIC (
+    DATA_WIDTH : integer := 24
   );
-
+  PORT (
+    A  : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+    B  : in  std_logic_vector(DATA_WIDTH-1 downto 0);
+    Q  : out std_logic_vector(DATA_WIDTH-1 downto 0);
+    Co : out std_logic
+  );
+  END COMPONENT;
   -- Señales y registros
   signal reg1,      reg2,      reg3,      reg4,      reg5      : std_logic_vector(23 downto 0);
   signal reg1_comb, reg2_comb, reg3_comb, reg4_comb, reg5_comb : std_logic_vector(23 downto 0);
@@ -51,6 +51,17 @@ ARCHITECTURE behavior OF datapath IS
   constant neg_a5 : std_logic_vector(23 downto 0) := "11111111" & "11101100" & "01111111";
 
 BEGIN  
+
+  sumador : RCA
+  generic map (
+    DATA_WIDTH => 24
+  )
+  port map (
+    A  => sumA,
+    B  => sumB,
+    Q  => sumQ,
+    Co => open
+  );
 
 Proc_seq : PROCESS (reset, clk) BEGIN
   IF reset='0' THEN
