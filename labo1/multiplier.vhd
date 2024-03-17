@@ -1,6 +1,5 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
-
 ENTITY multiplier IS
 GENERIC (
   DATA_WIDTH : integer := 24
@@ -33,8 +32,10 @@ ARCHITECTURE structural OF multiplier IS
   );
   END COMPONENT;
   
-  TYPE PARTIAL_PRODUCTS_T IS ARRAY (NATURAL RANGE <>, NATURAL RANGE <>) OF STD_LOGIC;
-  SIGNAL pps : PARTIAL_PRODUCTS_T(DATA_WIDTH-1 downto 0, DATA_WIDTH-1 downto 0);
+  TYPE LOGIC_ARRAY_T IS ARRAY (NATURAL RANGE <>, NATURAL RANGE <>) OF STD_LOGIC;
+  SIGNAL pps       : LOGIC_ARRAY_T(DATA_WIDTH-1 downto 0, DATA_WIDTH-1 downto 0);
+  SIGNAL sum_aux   : LOGIC_ARRAY_T(DATA_WIDTH-2 downto 0, DATA_WIDTH-3 downto 0);
+  SIGNAL carry_aux : LOGIC_ARRAY_T(DATA_WIDTH-1 downto 0, DATA_WIDTH-2 downto 0);
 
 BEGIN
   -- Generate partial products: 
@@ -49,15 +50,70 @@ BEGIN
   -- Generate Adders
   row_gen : FOR i IN 0 TO DATA_WIDTH-1 GENERATE
     IF (i = '0') GENERATE
+      -- First row is special
       HA_i_INST : half_adder
+      PORT MAP (
+        A    => pps(1,0),
+        B    => pps(0,1),
+        Sum  => Q(1),
+        Cout => carry_aux(0,0)
+      );
+      FOR j IN 0 TO DATA_WIDTH-3 GENERATE
+        FA_i_INST : full_adder
         PORT MAP (
-          A    => ,
-          B    => ,
-          Sum  => Q(1),
-          Cout => ,
+          A    => pps(2,j),
+          B    => pps(1,j+1),
+          Cin  => pps(0,j+2),
+          Sum  => sum_aux(0,j),
+          Cout => carry_aux(0,j+1)
         );
+      END GENERATE;
     ELSIF i = 'DATA_WIDTH-1' GENERATE
-
+      -- Generate final row
+      HA_i_INST : half_adder
+      PORT MAP (
+        A    => carry_aux(i-1,0),
+        B    => sum_aux(i-1,0),
+        Sum  => Q(i+1),
+        Cout => carry_aux(i,0)
+      );
+      FOR j IN 0 TO DATA_WIDTH-4 GENERATE
+        FA_i_INST : full_adder
+        PORT MAP (
+          A    => carry_aux(i,j),
+          B    => sum_aux(i-1,j),
+          Cin  => carry_aux(i-1,j+1),
+          Sum  => sum_aux(i,j),
+          Cout => carry_aux(i,j+1)
+        );
+      END GENERATE;
+    ELSE GENERATE
+      -- Generate all other rows
+      HA_i_INST : half_adder
+      PORT MAP (
+        A    => carry_aux(i-1,0),
+        B    => sum_aux(i-1,0),
+        Sum  => Q(i+1),
+        Cout => carry_aux(i,0)
+      );
+      FOR j IN 0 TO DATA_WIDTH-4 GENERATE
+        FA_i_INST : full_adder
+        PORT MAP (
+          A    => pps(i+2,j),
+          B    => sum_aux(i-1,j),
+          Cin  => carry_aux(i-1,j+1),
+          Sum  => sum_aux(i,j),
+          Cout => carry_aux(i,j+1)
+        );
+      END GENERATE;
+      FA_end_INST : full_adder
+      PORT MAP (
+        A    => pps(i+1,DATA_WIDTH-2),
+        B    => pps(i,DATA_WIDTH-1),
+        Cin  => carry_aux(i-1,DATA_WIDTH-2),
+        Sum  => sum_aux(i,j),
+        Cout => carry_aux(i,j+1)
+      );
     END GENERATE;
   END GENERATE;
   
