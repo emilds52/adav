@@ -24,7 +24,7 @@ ARCHITECTURE behavior OF tb_top IS
     data_out   : out std_logic_vector(23 downto 0);  
     valid_out  : out std_logic;
     ACK_out    : out std_logic );
-  END component;
+  END COMPONENT;
 
   SIGNAL reset,   clk      : std_logic;
   SIGNAL data_in, data_out : std_logic_vector(23 downto 0);
