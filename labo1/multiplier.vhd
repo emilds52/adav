@@ -49,7 +49,7 @@ BEGIN
   
   -- Generate Adders
   row_gen : FOR i IN 0 TO DATA_WIDTH-1 GENERATE
-    IF (i = '0') GENERATE
+    row_gen_if : IF i = 0 GENERATE
       -- First row is special
       HA_i_INST : half_adder
       PORT MAP (
@@ -58,7 +58,7 @@ BEGIN
         Sum  => Q(1),
         Cout => carry_aux(0,0)
       );
-      FOR j IN 0 TO DATA_WIDTH-3 GENERATE
+      fa_first_gen : FOR j IN 0 TO DATA_WIDTH-3 GENERATE
         FA_i_INST : full_adder
         PORT MAP (
           A    => pps(2,j),
@@ -68,7 +68,7 @@ BEGIN
           Cout => carry_aux(0,j+1)
         );
       END GENERATE;
-    ELSIF i = 'DATA_WIDTH-1' GENERATE
+    ELSIF (i = DATA_WIDTH-1) GENERATE
       -- Generate final row
       HA_i_INST : half_adder
       PORT MAP (
@@ -77,16 +77,23 @@ BEGIN
         Sum  => Q(i+1),
         Cout => carry_aux(i,0)
       );
-      FOR j IN 0 TO DATA_WIDTH-4 GENERATE
+      fa_last_gen : FOR j IN 0 TO DATA_WIDTH-4 GENERATE
         FA_i_INST : full_adder
         PORT MAP (
           A    => carry_aux(i,j),
           B    => sum_aux(i-1,j),
           Cin  => carry_aux(i-1,j+1),
-          Sum  => sum_aux(i,j),
+          Sum  => Q(i+j+1),
           Cout => carry_aux(i,j+1)
         );
       END GENERATE;
+      HA_end_INST : half_adder
+      PORT MAP (
+        A    => pps(DATA_WIDTH-1,DATA_WIDTH-1),
+        B    => carry_aux(i,DATA_WIDTH-3),
+        Sum  => Q(2*DATA_WIDTH-2),
+        Cout => Q(2*DATA_WIDTH-1)
+      );
     ELSE GENERATE
       -- Generate all other rows
       HA_i_INST : half_adder
@@ -96,11 +103,11 @@ BEGIN
         Sum  => Q(i+1),
         Cout => carry_aux(i,0)
       );
-      FOR j IN 0 TO DATA_WIDTH-4 GENERATE
+      fa_normal_gen : FOR j IN 0 TO DATA_WIDTH-4 GENERATE
         FA_i_INST : full_adder
         PORT MAP (
           A    => pps(i+2,j),
-          B    => sum_aux(i-1,j),
+          B    => sum_aux(i-1,j+1),
           Cin  => carry_aux(i-1,j+1),
           Sum  => sum_aux(i,j),
           Cout => carry_aux(i,j+1)
@@ -111,8 +118,8 @@ BEGIN
         A    => pps(i+1,DATA_WIDTH-2),
         B    => pps(i,DATA_WIDTH-1),
         Cin  => carry_aux(i-1,DATA_WIDTH-2),
-        Sum  => sum_aux(i,j),
-        Cout => carry_aux(i,j+1)
+        Sum  => sum_aux(i, DATA_WIDTH-3), 
+        Cout => carry_aux(i, DATA_WIDTH-2)
       );
     END GENERATE;
   END GENERATE;
