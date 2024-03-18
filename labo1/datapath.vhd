@@ -53,10 +53,10 @@ ARCHITECTURE behavior OF datapath IS
 BEGIN  
 
   sumador : RCA
-  generic map (
+  GENERIC MAP (
     DATA_WIDTH => 24
   )
-  port map (
+  PORT MAP (
     A  => sumA,
     B  => sumB,
     Q  => sumQ,
