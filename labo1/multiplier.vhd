@@ -34,8 +34,8 @@ ARCHITECTURE structural OF multiplier IS
   
   TYPE LOGIC_ARRAY_T IS ARRAY (NATURAL RANGE <>, NATURAL RANGE <>) OF STD_LOGIC;
   SIGNAL pps       : LOGIC_ARRAY_T(DATA_WIDTH-1 downto 0, DATA_WIDTH-1 downto 0);
-  SIGNAL sum_aux   : LOGIC_ARRAY_T(DATA_WIDTH-2 downto 0, DATA_WIDTH-3 downto 0);
-  SIGNAL carry_aux : LOGIC_ARRAY_T(DATA_WIDTH-1 downto 0, DATA_WIDTH-2 downto 0);
+  SIGNAL sum_aux   : LOGIC_ARRAY_T(DATA_WIDTH-3 downto 0, DATA_WIDTH-2 downto 0);
+  SIGNAL carry_aux : LOGIC_ARRAY_T(DATA_WIDTH-2 downto 0, DATA_WIDTH-1 downto 0);
 
 BEGIN
   -- Generate partial products: 
@@ -48,7 +48,7 @@ BEGIN
   END PROCESS;
   
   -- Generate Adders
-  row_gen : FOR i IN 0 TO DATA_WIDTH-1 GENERATE
+  row_gen : FOR i IN 0 TO DATA_WIDTH-2 GENERATE
     row_gen_if : IF i = 0 GENERATE
       -- First row is special
       HA_i_INST : half_adder
@@ -68,6 +68,13 @@ BEGIN
           Cout => carry_aux(0,j+1)
         );
       END GENERATE;
+      HA_end_INST : half_adder
+      PORT MAP (
+        A    => pps(DATA_WIDTH-2,DATA_WIDTH-2),
+        B    => pps(DATA_WIDTH-1,DATA_WIDTH-3),
+        Sum  => sum_aux(0, DATA_WIDTH-2),
+        Cout => carry_aux(0,DATA_WIDTH-1)
+      );
     ELSIF (i = DATA_WIDTH-1) GENERATE
       -- Generate final row
       HA_i_INST : half_adder
@@ -77,7 +84,7 @@ BEGIN
         Sum  => Q(i+1),
         Cout => carry_aux(i,0)
       );
-      fa_last_gen : FOR j IN 0 TO DATA_WIDTH-4 GENERATE
+      fa_last_gen : FOR j IN 0 TO DATA_WIDTH-3 GENERATE
         FA_i_INST : full_adder
         PORT MAP (
           A    => carry_aux(i,j),
@@ -90,7 +97,7 @@ BEGIN
       HA_end_INST : half_adder
       PORT MAP (
         A    => pps(DATA_WIDTH-1,DATA_WIDTH-1),
-        B    => carry_aux(i,DATA_WIDTH-3),
+        B    => carry_aux(i,DATA_WIDTH-2),
         Sum  => Q(2*DATA_WIDTH-2),
         Cout => Q(2*DATA_WIDTH-1)
       );
@@ -103,7 +110,7 @@ BEGIN
         Sum  => Q(i+1),
         Cout => carry_aux(i,0)
       );
-      fa_normal_gen : FOR j IN 0 TO DATA_WIDTH-4 GENERATE
+      fa_normal_gen : FOR j IN 0 TO DATA_WIDTH-3 GENERATE
         FA_i_INST : full_adder
         PORT MAP (
           A    => pps(i+2,j),
@@ -115,11 +122,11 @@ BEGIN
       END GENERATE;
       FA_end_INST : full_adder
       PORT MAP (
-        A    => pps(i+1,DATA_WIDTH-2),
-        B    => pps(i,DATA_WIDTH-1),
+        A    => pps(i+1,DATA_WIDTH-1),
+        B    => pps(i+2,DATA_WIDTH-2),
         Cin  => carry_aux(i-1,DATA_WIDTH-2),
-        Sum  => sum_aux(i, DATA_WIDTH-3), 
-        Cout => carry_aux(i, DATA_WIDTH-2)
+        Sum  => sum_aux(i, DATA_WIDTH-2), 
+        Cout => carry_aux(i, DATA_WIDTH-1)
       );
     END GENERATE;
   END GENERATE;
