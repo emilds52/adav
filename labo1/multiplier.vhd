@@ -75,7 +75,7 @@ BEGIN
         Sum  => sum_aux(0, DATA_WIDTH-2),
         Cout => carry_aux(0,DATA_WIDTH-1)
       );
-    ELSIF (i = DATA_WIDTH-1) GENERATE
+    ELSIF (i = DATA_WIDTH-2) GENERATE
       -- Generate final row
       HA_i_INST : half_adder
       PORT MAP (
@@ -90,7 +90,7 @@ BEGIN
           A    => carry_aux(i,j),
           B    => sum_aux(i-1,j),
           Cin  => carry_aux(i-1,j+1),
-          Sum  => Q(i+j+1),
+          Sum  => Q(i+j+2),
           Cout => carry_aux(i,j+1)
         );
       END GENERATE;
