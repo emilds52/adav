@@ -78,8 +78,8 @@ BEGIN
       END GENERATE;
       HA_end_INST : half_adder
       PORT MAP (
-        A    => pps(DATA_WIDTH*2-2,DATA_WIDTH*2-2),
-        B    => pps(DATA_WIDTH*2-1,DATA_WIDTH*2-3),
+        A    => pps(2,DATA_WIDTH*2-3),
+        B    => pps(1,DATA_WIDTH*2-2),
         Sum  => sum_aux(0, DATA_WIDTH*2-2),
         Cout => carry_aux(0,DATA_WIDTH*2-1)
       );
