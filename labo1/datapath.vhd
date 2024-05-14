@@ -4,6 +4,8 @@ USE IEEE.std_logic_arith.all;
 USE IEEE.std_logic_signed.all;
 
 ENTITY datapath IS 
+  GENERIC (
+           k : integer := 3 );
   PORT (
   reset, clk    : in std_logic;
   comandos      : in std_logic_vector(7 downto 0);
@@ -14,16 +16,18 @@ END datapath;
 
 ARCHITECTURE behavior OF datapath IS
 
-  signal tmp1,  tmp2,  tmp3,  tmp4,  tmp5  : std_logic_vector(23 downto 0);
-  signal tmp6,  tmp7,  tmp8,  tmp9,  tmp10 : std_logic_vector(23 downto 0);
-  signal tmp11, tmp12, tmp13, tmp14, tmp15 : std_logic_vector(23 downto 0);
-  signal tmp16, tmp17, tmp18, tmp0         : std_logic_vector(23 downto 0);
+  TYPE LOGIC_ARRAY_T IS ARRAY (NATURAL RANGE <>, NATURAL RANGE <>) OF STD_LOGIC;
 
-  signal m_tmp1,  m_tmp2,  m_tmp3,  m_tmp4,  m_tmp5  : std_logic_vector(47 downto 0);
-  signal m_tmp10, m_tmp11, m_tmp12, m_tmp13, m_tmp14 : std_logic_vector(47 downto 0);
+  signal tmp1,  tmp2,  tmp3,  tmp4,  tmp5  : LOGIC_ARRAY_T(k-1 downto 0, 23 downto 0);
+  signal tmp6,  tmp7,  tmp8,  tmp9,  tmp10 : LOGIC_ARRAY_T(k-1 downto 0, 23 downto 0);
+  signal tmp11, tmp12, tmp13, tmp14, tmp15 : LOGIC_ARRAY_T(k-1 downto 0, 23 downto 0);
+  signal tmp16, tmp17, tmp18, tmp0         : LOGIC_ARRAY_T(k-1 downto 0, 23 downto 0);
 
-  signal sv1,      sv2,      sv3,      sv4      : std_logic_vector(23 downto 0);
-  signal sv1_comb, sv2_comb, sv3_comb, sv4_comb : std_logic_vector(23 downto 0);
+  signal m_tmp1,  m_tmp2,  m_tmp3,  m_tmp4,  m_tmp5  : LOGIC_ARRAY_T(k-1 downto 0, 47 downto 0);
+  signal m_tmp10, m_tmp11, m_tmp12, m_tmp13, m_tmp14 : LOGIC_ARRAY_T(k-1 downto 0, 47 downto 0);
+
+  signal sv1,      sv2,      sv3,      sv4      : LOGIC_ARRAY_T(k-1 downto 0, 23 downto 0);
+  signal sv1_comb, sv2_comb, sv3_comb, sv4_comb : LOGIC_ARRAY_T(k-1 downto 0, 23 downto 0);
 
   constant b1 : std_logic_vector(23 downto 0) := "00000000" & "00000100" & "11000000";
   constant b2 : std_logic_vector(23 downto 0) := "00000000" & "00010011" & "00000010";
@@ -37,25 +41,6 @@ ARCHITECTURE behavior OF datapath IS
   constant neg_a4 : std_logic_vector(23 downto 0) := "00000000" & "01111100" & "00000001";
   constant neg_a5 : std_logic_vector(23 downto 0) := "11111111" & "11101100" & "01111111";
 
--- +b1 = "00000000" & "00000100" & "11000000";   -- b1 > 0
--- +b2 = "00000000" & "00010011" & "00000010";   -- b2 > 0
--- +b3 = "00000000" & "00011100" & "10000011";   -- b3 > 0
--- +b4 = "00000000" & "00010011" & "00000010";   -- b4 > 0
--- +b5 = "00000000" & "00000100" & "11000000";   -- b5 > 0
--- 
--- +a1 = "00000001" & "00000000" & "00000000";   -- a1 > 0
--- -a2 = "00000001" & "10010010" & "00000101";   -- a2 < 0
--- +a3 = "00000001" & "01000110" & "10001110";   -- a3 > 0
--- -a4 = "00000000" & "01111100" & "00000001";   -- a4 < 0
--- +a5 = "00000000" & "00010011" & "10000001";   -- a5 > 0
--- 
--- inv_a1 = "00000001" & "00000000" & "00000000";   -- inv_a1 > 0
--- neg_a2 = "00000001" & "10010010" & "00000101";   -- neg_a2 > 0
--- neg_a3 = "11111110" & "10111001" & "01110010";   -- neg_a3 < 0
--- neg_a4 = "00000000" & "01111100" & "00000001";   -- neg_a4 > 0
--- neg_a5 = "11111111" & "11101100" & "01111111";   -- neg_a5 < 0
-
-
 BEGIN  
   Proc_seq : PROCESS (reset, clk)
   BEGIN
@@ -64,51 +49,71 @@ BEGIN
       sv3 <= (others => '0');    sv4 <= (others => '0');
     ELSIF (clk'event AND clk='1') THEN
       IF comandos(0)='1' THEN
-        sv1 <= sv1_comb;   sv2 <= sv2_comb;
-        sv3 <= sv3_comb;   sv4 <= sv4_comb;
+        sv1(k-1) <= sv1_comb(k-1);   sv2(k-1) <= sv2_comb(k-1); -- Solo tener delay en el último (antes de retiming)
+        sv3(k-1) <= sv3_comb(k-1);   sv4(k-1) <= sv4_comb(k-1);
       END IF; 
     END IF; 
   END PROCESS;
 
   flags <= (others => '0');
 
-  tmp0   <= entradas;
-  m_tmp1 <= tmp0 * b1;
-  tmp1   <= m_tmp1(39 downto 16);
-  m_tmp2 <= tmp0 * b2;
-  tmp2   <= m_tmp2(39 downto 16);
-  m_tmp3 <= tmp0 * b3;
-  tmp3   <= m_tmp3(39 downto 16);
-  m_tmp4 <= tmp0 * b4;
-  tmp4   <= m_tmp4(39 downto 16);
-  m_tmp5 <= tmp0 * b5;
-  tmp5   <= m_tmp5(39 downto 16);
+  proc_sv : PROCESS(all)
+  IF (k > 1) THEN -- Si k=1 todo tiene delay y se hace arriba
+    sv1(0 to k-2) <= sv1_comb(0 to k-2)
+    sv2(0 to k-2) <= sv2_comb(0 to k-2)
+    sv3(0 to k-2) <= sv3_comb(0 to k-2)
+    sv4(0 to k-2) <= sv4_comb(0 to k-2)
+  END IF;
 
-  tmp6 <= tmp4 + sv4;
-  tmp7 <= tmp3 + sv3;
-  tmp8 <= tmp2 + sv2;
-  tmp9 <= tmp1 + sv1;
+  proc_unfolding : PROCESS(all)
+    loop_unfolding : FOR i IN 0 TO k-1 LOOP
+      tmp0(i)   <= entradas(i);
+      m_tmp1(i) <= tmp0(i) * b1;
+      tmp1(i)   <= m_tmp1(i, 39 downto 16);
+      m_tmp2(i) <= tmp0(i) * b2;
+      tmp2(i)   <= m_tmp2(i, 39 downto 16);
+      m_tmp3(i) <= tmp0(i) * b3;
+      tmp3(i)   <= m_tmp3(i, 39 downto 16);
+      m_tmp4(i) <= tmp0(i) * b4;
+      tmp4(i)   <= m_tmp4(i, 39 downto 16);
+      m_tmp5(i) <= tmp0(i) * b5;
+      tmp5(i)   <= m_tmp5(i, 39 downto 16);
 
-  m_tmp10 <= tmp9 * inv_a1;
-  tmp10   <= m_tmp10(39 downto 16);
-  m_tmp11 <= tmp10 * neg_a2;
-  tmp11   <= m_tmp11(39 downto 16);
-  m_tmp12 <= tmp10 * neg_a3;
-  tmp12   <= m_tmp12(39 downto 16);
-  m_tmp13 <= tmp10 * neg_a4;
-  tmp13   <= m_tmp13(39 downto 16);
-  m_tmp14 <= tmp10 * neg_a5;
-  tmp14   <= m_tmp14(39 downto 16);
+      -- Los SVs van al siguiente índice, menos el k-1 que va al primero y con delay
+      IF (i = 0) THEN 
+        tmp6(0) <= tmp4(0) + sv4(k-1);
+        tmp7(0) <= tmp3(0) + sv3(k-1);
+        tmp8(0) <= tmp2(0) + sv2(k-1);
+        tmp9(0) <= tmp1(0) + sv1(k-1);
+      ELSE
+        tmp6(i) <= tmp4(i) + sv4(i-1);
+        tmp7(i) <= tmp3(i) + sv3(i-1);
+        tmp8(i) <= tmp2(i) + sv2(i-1);
+        tmp9(i) <= tmp1(i) + sv1(i-1);
+      END IF;
 
-  tmp15 <= tmp8 + tmp11;
-  tmp16 <= tmp7 + tmp12;
-  tmp17 <= tmp6 + tmp13;
-  tmp18 <= tmp5 + tmp14;
+      m_tmp10(i) <= tmp9(i) * inv_a1;
+      tmp10(i)   <= m_tmp10(i, 39 downto 16);
+      m_tmp11(i) <= tmp10(i) * neg_a2;
+      tmp11(i)   <= m_tmp11(i, 39 downto 16);
+      m_tmp12(i) <= tmp10(i) * neg_a3;
+      tmp12(i)   <= m_tmp12(i, 39 downto 16);
+      m_tmp13(i) <= tmp10(i) * neg_a4;
+      tmp13(i)   <= m_tmp13(i, 39 downto 16);
+      m_tmp14(i) <= tmp10(i) * neg_a5;
+      tmp14(i)   <= m_tmp14(i, 39 downto 16);
 
-  sv4_comb <= tmp18;
-  sv3_comb <= tmp17;
-  sv2_comb <= tmp16;
-  sv1_comb <= tmp15;
+      tmp15(i) <= tmp8(i) + tmp11(i);
+      tmp16(i) <= tmp7(i) + tmp12(i);
+      tmp17(i) <= tmp6(i) + tmp13(i);
+      tmp18(i) <= tmp5(i) + tmp14(i);
 
-  salidas <= tmp10;
+      sv4_comb(i) <= tmp18(i);
+      sv3_comb(i) <= tmp17(i);
+      sv2_comb(i) <= tmp16(i);
+      sv1_comb(i) <= tmp15(i);
+
+      salidas(i) <= tmp10(i);
+    END LOOP
+  END PROCESS
 END behavior;
