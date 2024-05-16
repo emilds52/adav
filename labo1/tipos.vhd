@@ -1,0 +1,7 @@
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.all;
+
+PACKAGE tipos IS
+  TYPE LOGIC_ARRAY_T IS ARRAY (NATURAL RANGE <>) OF STD_LOGIC_VECTOR;
+  CONSTANT pa_k : integer := 3;
+END tipos;
