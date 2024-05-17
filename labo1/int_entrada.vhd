@@ -10,8 +10,8 @@ ENTITY interfaz_entrada IS
   PORT (
      reset, clk    : in std_logic;
      validacion    : in std_logic;
-     data_in       : in LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0);
-     entradas      : out LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0) );  
+     data_in       : in LOGIC_ARRAY_24_T(k-1 downto 0);
+     entradas      : out LOGIC_ARRAY_24_T(k-1 downto 0) );  
 END interfaz_entrada;
 
 ARCHITECTURE behavior OF interfaz_entrada IS

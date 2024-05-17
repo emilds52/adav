@@ -10,23 +10,24 @@ ENTITY datapath IS
   PORT (
   reset, clk    : in std_logic;
   comandos      : in std_logic_vector(7 downto 0);
-  entradas      : in LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0);  
-  salidas       : out LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0);
+  entradas      : in LOGIC_ARRAY_24_T(k-1 downto 0);  
+  salidas       : out LOGIC_ARRAY_24_T(k-1 downto 0);
   flags         : out std_logic_vector(7 downto 0) );
 END datapath;
 
 ARCHITECTURE behavior OF datapath IS
 
-  signal tmp1,  tmp2,  tmp3,  tmp4,  tmp5  : LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0);
-  signal tmp6,  tmp7,  tmp8,  tmp9,  tmp10 : LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0);
-  signal tmp11, tmp12, tmp13, tmp14, tmp15 : LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0);
-  signal tmp16, tmp17, tmp18, tmp0         : LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0);
+  signal tmp1,  tmp2,  tmp3,  tmp4,  tmp5  : LOGIC_ARRAY_24_T(k-1 downto 0);
+  signal tmp6,  tmp7,  tmp8,  tmp9,  tmp10 : LOGIC_ARRAY_24_T(k-1 downto 0);
+  signal tmp11, tmp12, tmp13, tmp14, tmp15 : LOGIC_ARRAY_24_T(k-1 downto 0);
+  signal tmp16, tmp17, tmp18, tmp0         : LOGIC_ARRAY_24_T(k-1 downto 0);
 
-  signal m_tmp1,  m_tmp2,  m_tmp3,  m_tmp4,  m_tmp5  : LOGIC_ARRAY_T(k-1 downto 0)(47 downto 0);
-  signal m_tmp10, m_tmp11, m_tmp12, m_tmp13, m_tmp14 : LOGIC_ARRAY_T(k-1 downto 0)(47 downto 0);
+  signal m_tmp1,  m_tmp2,  m_tmp3,  m_tmp4,  m_tmp5  : LOGIC_ARRAY_48_T(k-1 downto 0);
+  signal m_tmp10, m_tmp11, m_tmp12, m_tmp13, m_tmp14 : LOGIC_ARRAY_48_T(k-1 downto 0);
 
-  signal sv1,      sv2,      sv3,      sv4      : LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0);
-  signal sv1_comb, sv2_comb, sv3_comb, sv4_comb : LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0);
+  signal sv1,      sv2,      sv3,      sv4      : LOGIC_ARRAY_24_T(k-1 downto 0);
+  signal sv1_reg,  sv2_reg,  sv3_reg,  sv4_reg  : STD_LOGIC_VECTOR(23 downto 0);
+  signal sv1_comb, sv2_comb, sv3_comb, sv4_comb : LOGIC_ARRAY_24_T(k-1 downto 0);
 
   constant b1 : std_logic_vector(23 downto 0) := "00000000" & "00000100" & "11000000";
   constant b2 : std_logic_vector(23 downto 0) := "00000000" & "00010011" & "00000010";
@@ -44,12 +45,12 @@ BEGIN
   Proc_seq : PROCESS (reset, clk)
   BEGIN
     IF reset='0' THEN
-      sv1 <= (others => (others => '0'));    sv2 <= (others => (others => '0'));
-      sv3 <= (others => (others => '0'));    sv4 <= (others => (others => '0'));
+      sv1_reg <= (others => '0');    sv2_reg <= (others => '0');
+      sv3_reg <= (others => '0');    sv4_reg <= (others => '0');
     ELSIF (clk'event AND clk='1') THEN
       IF comandos(0)='1' THEN
-        sv1(k-1) <= sv1_comb(k-1);   sv2(k-1) <= sv2_comb(k-1); -- Solo tener delay en el último (antes de retiming)
-        sv3(k-1) <= sv3_comb(k-1);   sv4(k-1) <= sv4_comb(k-1);
+        sv1_reg <= sv1_comb(k-1);   sv2_reg <= sv2_comb(k-1); -- Solo tener delay en el último (antes de retiming)
+        sv3_reg <= sv3_comb(k-1);   sv4_reg <= sv4_comb(k-1);
       END IF; 
     END IF; 
   END PROCESS;
@@ -57,12 +58,18 @@ BEGIN
   flags <= (others => '0');
 
   proc_sv : PROCESS(all) BEGIN
-  IF (k > 1) THEN -- Si k=1 todo tiene delay y se hace arriba
-    sv1(0 to k-2) <= sv1_comb(0 to k-2);
-    sv2(0 to k-2) <= sv2_comb(0 to k-2);
-    sv3(0 to k-2) <= sv3_comb(0 to k-2);
-    sv4(0 to k-2) <= sv4_comb(0 to k-2);
-  END IF;
+    IF (k > 1) THEN -- Si k=1 todo tiene delay y se hace arriba
+      loop_sv : FOR i IN 0 to k-2 LOOP
+        sv1(i) <= sv1_comb(i);
+        sv2(i) <= sv2_comb(i);
+        sv3(i) <= sv3_comb(i);
+        sv4(i) <= sv4_comb(i);
+      END LOOP;
+    END IF;
+    sv1(k-1) <= sv1_reg;
+    sv2(k-1) <= sv2_reg;
+    sv3(k-1) <= sv3_reg;
+    sv4(k-1) <= sv4_reg;
   END PROCESS;
 
   proc_unfolding : PROCESS(all) BEGIN

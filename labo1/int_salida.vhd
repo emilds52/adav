@@ -10,8 +10,8 @@ ENTITY interfaz_salida IS
   PORT (
      reset, clk     : in std_logic;
            fin      : in std_logic;
-           salidas  : in LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0);
-           data_out : out LOGIC_ARRAY_T(k-1 downto 0)(23 downto 0);
+           salidas  : in LOGIC_ARRAY_24_T(k-1 downto 0);
+           data_out : out LOGIC_ARRAY_24_T(k-1 downto 0);
            valid_out: out std_logic );
 END interfaz_salida;
 
